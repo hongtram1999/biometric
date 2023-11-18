@@ -79,7 +79,8 @@ const configureClient = async () => {
     domain: "zonar-dev.auth0.com",
     clientId: "NhaFhctl0tKvd7m9Daz6nJau09FQyKfm",
     authorizationParams: {
-      audience: "http://localhost:3000/"
+      audience: "http://localhost:3000/",
+      scope: "openid profile email offline_access"
     },
     cacheLocation: "localstorage",
     useRefreshTokens: true,
