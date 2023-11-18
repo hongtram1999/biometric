@@ -107,7 +107,9 @@ const requireAuth = async (fn, targetUrl) => {
  */
 const callApi = async () => {
   try {
+    console.log("===== TEST ===== :: before call tk");
     const token = await auth0Client.getTokenSilently();
+    console.log("===== TEST ===== token :: ", token);
 
     const response = await fetch("/api/external", {
       headers: {
@@ -124,7 +126,7 @@ const callApi = async () => {
 
     eachElement(".result-block", (c) => c.classList.add("show"));
   } catch (e) {
-    console.error(e);
+    console.log("===== TEST ===== ERR :: ", e);
   }
 };
 
