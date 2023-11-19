@@ -1,49 +1,34 @@
-const express = require("express");
-const morgan = require("morgan");
-const helmet = require("helmet");
-const { auth } = require("express-oauth2-jwt-bearer");
-const { join } = require("path");
-const authConfig = require("./auth_config.json");
+const express = require('express');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const { join } = require('path');
+const authConfig = require('./auth_config.json');
 
 const app = express();
 
-if (!authConfig.domain || !authConfig.audience) {
-  throw "Please make sure that auth_config.json is in place and populated";
-}
+const port = process.env.SERVER_PORT || 4200;
 
-app.use(morgan("dev"));
-app.use(helmet());
-app.use(express.static(join(__dirname, "public")));
+app.use(morgan('dev'));
 
-const checkJwt = auth({
-  audience: authConfig.audience,
-  issuerBaseURL: `https://${authConfig.domain}`,
-});
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      // reportOnly: true,
+      directives: {
+        'default-src': ["'self'"],
+        'connect-src': ["'self'", 'https://*.auth0.com', authConfig.apiUri],
+        'frame-src': ["'self'", 'https://*.auth0.com'],
+        'base-uri': ["'self'"],
+        'block-all-mixed-content': [],
+        'font-src': ["'self'", 'https:', 'data:'],
+        'frame-ancestors': ["'self'"],
+        'img-src': ["'self'", 'data:', '*.gravatar.com'],
+        'style-src': ["'self'", 'https:', "'unsafe-inline'"],
+      },
+    },
+  })
+);
 
-app.get("/api/external", checkJwt, (req, res) => {
-  res.send({
-    msg: "Your access token was successfully validated!"
-  });
-});
+app.use(express.static(join(__dirname, 'dist')));
 
-app.get("./auth_config.json", (req, res) => {
-  res.sendFile(join(__dirname, "auth_config.json"));
-});
-
-app.get("/*", (req, res) => {
-  res.sendFile(join(__dirname, "index.html"));
-});
-
-app.use(function(err, req, res, next) {
-  if (err.name === "UnauthorizedError") {
-    return res.status(401).send({ msg: "Invalid token" });
-  }
-
-  next(err, req, res);
-});
-
-process.on("SIGINT", function() {
-  process.exit();
-});
-
-module.exports = app;
+app.listen(port, () => console.log(`App server listening on port ${port}`));
